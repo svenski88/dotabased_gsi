@@ -1,0 +1,17 @@
+﻿{
+  "name": "dotabased-gsi",
+  "version": "0.1.0",
+  "description": "Local Dota 2 Game State Integration bridge for DotaBASED HeroDraft.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "dota2",
+    "gamestate-integration",
+    "dotabased"
+  ],
+  "license": "MIT"
+}
