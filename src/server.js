@@ -1,10 +1,12 @@
 ﻿import http from 'node:http';
 import { emptyDraft, normalizeGameStateDraft, summarizeGameState } from './draft.js';
+import { PredictionService } from './predictor.js';
 
 const HOST = process.env.DOTABASED_GSI_HOST || '127.0.0.1';
 const PORT = Number(process.env.DOTABASED_GSI_PORT || 3100);
 const AUTH_TOKEN = process.env.DOTABASED_GSI_TOKEN || 'dotabased-local-gsi';
 const VERSION = '0.1.0';
+const STALE_AFTER_MS = Number(process.env.DOTABASED_GSI_STALE_AFTER_MS || 5000);
 const allowedOrigins = new Set([
   'http://localhost:5173',
   'http://localhost:5174',
@@ -19,6 +21,7 @@ const allowedOrigins = new Set([
 let latestRawGameState = null;
 let latestDraft = emptyDraft();
 let latestPostAt = null;
+const predictionService = new PredictionService();
 
 function readRequestBody(request) {
   return new Promise((resolve, reject) => {
@@ -78,6 +81,41 @@ function isAuthorized(payload) {
   return !AUTH_TOKEN || token === AUTH_TOKEN;
 }
 
+function buildSnapshot() {
+  const latestPostMs = latestPostAt ? Date.parse(latestPostAt) : null;
+  const ageMs = Number.isFinite(latestPostMs) ? Date.now() - latestPostMs : null;
+  const safeGameState = latestRawGameState && typeof latestRawGameState === 'object'
+    ? latestRawGameState
+    : {};
+
+  return {
+    ok: true,
+    version: VERSION,
+    listening: `${HOST}:${PORT}`,
+    connected: Boolean(latestRawGameState),
+    latestPostAt,
+    ageMs,
+    isStale: ageMs === null || ageMs > STALE_AFTER_MS,
+    staleAfterMs: STALE_AFTER_MS,
+    matchId: latestDraft.matchId,
+    gameState: latestDraft.gameState,
+    diagnostic: latestDraft.diagnostic,
+    draft: latestDraft,
+    sections: {
+      provider: safeGameState.provider || null,
+      map: safeGameState.map || null,
+      player: safeGameState.player || null,
+      hero: safeGameState.hero || null,
+      draft: safeGameState.draft || null,
+      items: safeGameState.items || null,
+      abilities: safeGameState.abilities || null,
+      buildings: safeGameState.buildings || null,
+    },
+    summary: summarizeGameState(latestRawGameState),
+    raw: latestRawGameState,
+  };
+}
+
 async function handleGsiPost(request, response) {
   try {
     const bodyText = await readRequestBody(request);
@@ -94,6 +132,21 @@ async function handleGsiPost(request, response) {
     writeJson(response, 200, { ok: true }, request);
   } catch (error) {
     writeJson(response, 400, { ok: false, error: error.message || 'Invalid GSI payload.' }, request);
+  }
+}
+
+async function handlePredictPost(request, response) {
+  try {
+    const bodyText = await readRequestBody(request);
+    const payload = bodyText ? JSON.parse(bodyText) : {};
+    const prediction = await predictionService.predict(payload.models || {});
+    writeJson(response, 200, prediction, request);
+  } catch (error) {
+    writeJson(response, 503, {
+      ok: false,
+      error: error.message || 'Could not score prediction models.',
+      status: predictionService.status(),
+    }, request);
   }
 }
 
@@ -130,8 +183,23 @@ const server = http.createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === 'GET' && path === '/snapshot') {
+    writeJson(response, 200, buildSnapshot(), request);
+    return;
+  }
+
+  if (request.method === 'GET' && path === '/predict/status') {
+    writeJson(response, 200, predictionService.status(), request);
+    return;
+  }
+
   if (request.method === 'POST' && path === '/gsi') {
     await handleGsiPost(request, response);
+    return;
+  }
+
+  if (request.method === 'POST' && path === '/predict') {
+    await handlePredictPost(request, response);
     return;
   }
 
