@@ -10,7 +10,7 @@ import lightgbm as lgb
 import numpy as np
 
 
-SUPPORTED_MODELS = ("min3", "micro19")
+SUPPORTED_MODELS = ("min3", "micro19", "herowr", "max482")
 
 
 def default_prediction_dir() -> Path:
