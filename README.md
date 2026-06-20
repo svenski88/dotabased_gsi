@@ -2,6 +2,8 @@
 
 Local Node helper for Dota 2 Game State Integration. It receives GSI payloads from the Dota 2 client, exposes browser-readable draft/debug endpoints for DotaBASED, and can proxy prediction requests to local LightGBM model files.
 
+Developer Note:  This is a beta utility and not ready for general distribution yet.  Please provide testing feedback to me on discord: [.svenge](https://discord.com/users/127179901148069889)
+
 ## Requirements
 
 - Node.js 18 or newer
