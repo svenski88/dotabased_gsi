@@ -36,6 +36,16 @@ npm start
 
 ## Dota 2 Config
 
+Enable Game State Integration in Dota 2's Steam launch options:
+
+1. Open Steam.
+2. Right-click Dota 2 and select `Properties`.
+3. In `General` -> `Launch Options`, add:
+
+```text
+-gamestateintegration
+```
+
 Copy `config/gamestate_integration_dotabased.cfg` to:
 
 ```text
