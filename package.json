@@ -6,7 +6,8 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "release:zip": "powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1"
   },
   "keywords": [
     "dota2",

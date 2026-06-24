@@ -34,6 +34,12 @@ npm start
 
 `npm run dev` starts the same helper with Node's watch mode.
 
+Windows users can also start the bridge with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-dotabased-gsi.ps1
+```
+
 ## Dota 2 Config
 
 Enable Game State Integration in Dota 2's Steam launch options:
@@ -55,6 +61,18 @@ steamapps\common\dota 2 beta\game\dota\cfg\gamestate_integration\gamestate_integ
 Restart Dota 2 after adding or changing the config.
 
 The checked-in config posts to `http://127.0.0.1:3100/gsi`, enables `provider`, `map`, `player`, `hero`, `draft`, `items`, `abilities`, and `buildings` sections, and sends the default auth token `dotabased-local-gsi`.
+
+Windows users can install the checked-in config with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1
+```
+
+If Dota 2 is installed in a custom Steam library, pass the folder ending in `dota 2 beta\game\dota`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1 -DotaPath "D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota"
+```
 
 ## Endpoints
 
@@ -149,3 +167,38 @@ Allowed browser origins:
 - `https://www.dotabased.com`
 
 Use `127.0.0.1`, not a LAN IP, for the first pass.
+
+## Release Packaging
+
+Build a GitHub Release zip locally with:
+
+```powershell
+npm run release:zip
+```
+
+If PowerShell blocks `npm.ps1`, use:
+
+```powershell
+npm.cmd run release:zip
+```
+
+This creates:
+
+```text
+dist\dotabased-gsi-v0.1.0.zip
+```
+
+The release zip contains the source files, config template, README, and helper scripts. It intentionally does not include prediction model files.
+
+Suggested GitHub release flow:
+
+```powershell
+git status
+git add .gitignore README.md package.json scripts
+git commit -m "add release helper scripts"
+git tag v0.1.0
+git push origin master
+git push origin v0.1.0
+```
+
+Then create a GitHub Release from the `v0.1.0` tag and upload `dist\dotabased-gsi-v0.1.0.zip`.
