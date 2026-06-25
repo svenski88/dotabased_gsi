@@ -14,6 +14,9 @@ SUPPORTED_MODELS = ("min3", "micro19", "herowr", "max482")
 
 
 def default_prediction_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parents[1] / "dotaprediction"
+
     return Path(__file__).resolve().parents[2] / "dotaprediction"
 
 

@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
-    "release:zip": "powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1"
+    "release:zip": "powershell -ExecutionPolicy Bypass -File scripts/build-release.ps1",
+    "build:node-exe": "powershell -ExecutionPolicy Bypass -File scripts/build-node-exe.ps1",
+    "build:scorer-exe": "powershell -ExecutionPolicy Bypass -File scripts/build-scorer-exe.ps1",
+    "release:windows-exe": "powershell -ExecutionPolicy Bypass -File scripts/build-windows-release.ps1"
   },
   "keywords": [
     "dota2",

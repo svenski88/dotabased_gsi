@@ -1,14 +1,53 @@
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+function currentModuleDir() {
+  if (typeof __dirname !== 'undefined') {
+    return __dirname;
+  }
+
+  return path.dirname(fileURLToPath(import.meta.url));
+}
+
+const MODULE_DIR = currentModuleDir();
 
 const PYTHON_BIN = process.env.DOTABASED_PYTHON || 'python';
+const EXECUTABLE_DIR = path.dirname(process.execPath);
+const BUNDLED_SCORER_PATH = path.join(EXECUTABLE_DIR, 'scorer', 'scorer.exe');
+const BUNDLED_PREDICTION_DIR = path.join(EXECUTABLE_DIR, 'dotaprediction');
+const SOURCE_SCORER_PATH = path.join(MODULE_DIR, 'scorer.py');
+const SOURCE_PREDICTION_DIR = path.resolve(MODULE_DIR, '..', '..', 'dotaprediction');
+const IS_PACKAGED_EXECUTABLE = path.basename(process.execPath).toLowerCase() === 'dotabased-gsi.exe'
+  || fs.existsSync(BUNDLED_SCORER_PATH);
 const PREDICTION_DIR = process.env.DOTABASED_PREDICTION_DIR
-  || path.resolve(__dirname, '..', '..', 'dotaprediction');
+  || (IS_PACKAGED_EXECUTABLE ? BUNDLED_PREDICTION_DIR : SOURCE_PREDICTION_DIR);
 const REQUEST_TIMEOUT_MS = Number(process.env.DOTABASED_PREDICT_TIMEOUT_MS || 2000);
+
+function scorerCommand() {
+  if (process.env.DOTABASED_SCORER_EXE) {
+    return {
+      command: process.env.DOTABASED_SCORER_EXE,
+      args: [],
+      mode: 'custom-exe',
+    };
+  }
+
+  if (fs.existsSync(BUNDLED_SCORER_PATH)) {
+    return {
+      command: BUNDLED_SCORER_PATH,
+      args: [],
+      mode: 'bundled-exe',
+    };
+  }
+
+  return {
+    command: PYTHON_BIN,
+    args: [SOURCE_SCORER_PATH],
+    mode: 'python',
+  };
+}
 
 export class PredictionService {
   constructor() {
@@ -26,8 +65,10 @@ export class PredictionService {
       return;
     }
 
-    const scorerPath = path.join(__dirname, 'scorer.py');
-    this.process = spawn(PYTHON_BIN, [scorerPath], {
+    const scorer = scorerCommand();
+    this.scorerMode = scorer.mode;
+    this.scorerPath = scorer.command;
+    this.process = spawn(scorer.command, scorer.args, {
       env: {
         ...process.env,
         DOTABASED_PREDICTION_DIR: PREDICTION_DIR,
@@ -139,6 +180,8 @@ export class PredictionService {
       ok: this.ready,
       ready: this.ready,
       modelRoot: PREDICTION_DIR,
+      scorerMode: this.scorerMode || scorerCommand().mode,
+      scorerPath: this.scorerPath || scorerCommand().command,
       error: this.startupError,
       stderr: this.stderrBuffer,
     };

@@ -149,7 +149,7 @@ Example response:
 }
 ```
 
-By default the scorer looks for model files in `..\dotaprediction` relative to this repo. Each model directory must contain `model.txt` and `model_meta.json` with `feature_names`.
+By default, source/development mode looks for model files in `..\dotaprediction` relative to this repo. Windows executable releases look for model files in `.\dotaprediction` next to `dotabased-gsi.exe`, even if that folder is not present yet. Set `DOTABASED_PREDICTION_DIR` to override either default. Each model directory must contain `model.txt` and `model_meta.json` with `feature_names`.
 
 ## Browser Access
 
@@ -169,6 +169,8 @@ Allowed browser origins:
 Use `127.0.0.1`, not a LAN IP, for the first pass.
 
 ## Release Packaging
+
+### Source Release Zip
 
 Build a GitHub Release zip locally with:
 
@@ -202,3 +204,43 @@ git push origin v0.1.0
 ```
 
 Then create a GitHub Release from the `v0.1.0` tag and upload `dist\dotabased-gsi-v0.1.0.zip`.
+
+### Windows Executable Release Zip
+
+Build a Windows x64 release zip with:
+
+```powershell
+npm.cmd run release:windows-exe
+```
+
+This creates:
+
+```text
+dist\dotabased-gsi-v0.1.0-windows-x64.zip
+```
+
+The Windows executable release is intended for users who do not have Node.js or Python installed. It contains:
+
+- `dotabased-gsi.exe`: the local bridge server packaged with Node's Single Executable Application flow.
+- `scorer\scorer.exe`: the prediction scorer packaged with PyInstaller.
+- `config\gamestate_integration_dotabased.cfg`.
+- `scripts\install-gsi-config.ps1`.
+- `start-dotabased-gsi.bat`.
+
+Build environment requirements for the Windows executable zip:
+
+- Node.js with `--experimental-sea-config` support.
+- `npm`/`npx`, used by the build script to run `esbuild` and `postject`.
+- Python with PyInstaller, LightGBM, and NumPy installed:
+
+```powershell
+python -m pip install pyinstaller lightgbm numpy
+```
+
+To include local prediction models in the executable release zip, pass the model directory explicitly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-windows-release.ps1 -IncludePredictionModels -PredictionDir "C:\path\to\dotaprediction"
+```
+
+Only include prediction model files if redistribution is allowed. If models are omitted, the bridge still starts, but `/predict/status` reports a model-loading error until users provide `DOTABASED_PREDICTION_DIR` or place models in `dotaprediction` next to `dotabased-gsi.exe`.
