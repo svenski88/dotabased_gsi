@@ -4,20 +4,115 @@ Local Node helper for Dota 2 Game State Integration. It receives GSI payloads fr
 
 Developer Note:  This is a beta utility and not ready for general distribution yet.  Please provide testing feedback to me on discord: [.svenge](https://discord.com/users/127179901148069889)
 
-## Requirements
+## Install and Run
+
+### Windows Executable Release
+
+Use this package if you downloaded `dotabased-gsi-v0.1.0-windows-x64.zip`. This release does not require Node.js or Python to be installed.
+
+1. Extract `dotabased-gsi-v0.1.0-windows-x64.zip` to a folder such as:
+
+```text
+C:\Tools\dotabased-gsi
+```
+
+2. Optional: place prediction models in:
+
+```text
+C:\Tools\dotabased-gsi\dotaprediction
+```
+
+The expected model layout is:
+
+```text
+dotaprediction\
+  min3\model.txt
+  min3\model_meta.json
+  micro19\model.txt
+  micro19\model_meta.json
+  herowr\model.txt
+  herowr\model_meta.json
+  max482\model.txt
+  max482\model_meta.json
+```
+
+You can also keep models elsewhere and set `DOTABASED_PREDICTION_DIR` before launching:
+
+```bat
+set DOTABASED_PREDICTION_DIR=D:\DotaModels\dotaprediction
+dotabased-gsi.exe
+```
+
+3. Install the Dota 2 GSI config:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1
+```
+
+If Dota 2 is installed in a custom Steam library, pass the folder ending in `dota 2 beta\game\dota`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1 -DotaPath "D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota"
+```
+
+4. Enable Game State Integration in Dota 2's Steam launch options:
+
+```text
+-gamestateintegration
+```
+
+5. Restart Dota 2.
+
+6. Start the bridge:
+
+```text
+start-dotabased-gsi.bat
+```
+
+The helper listens on `http://127.0.0.1:3100` by default.
+
+### Node Server Release
+
+Use this package if you downloaded `dotabased-gsi-v0.1.0.zip` or cloned the repository.
+
+Requirements:
 
 - Node.js 18 or newer
 - Dota 2 installed locally
 - Optional, for `/predict`: Python with `lightgbm` and `numpy`, plus the prediction model directory
   - Prediction models available from WonderCow's patreon here: https://www.patreon.com/TheWonderCow
 
-## Run
+1. Extract the zip or clone the repo.
+
+2. Optional: place prediction models at `..\dotaprediction` relative to this repo, or set `DOTABASED_PREDICTION_DIR`.
+
+3. Install the Dota 2 GSI config:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1
+```
+
+4. Enable Game State Integration in Dota 2's Steam launch options:
+
+```text
+-gamestateintegration
+```
+
+5. Restart Dota 2.
+
+6. Start the bridge:
 
 ```powershell
 npm start
 ```
 
-The helper listens on `http://127.0.0.1:3100` by default.
+Windows users can also start the Node server with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\start-dotabased-gsi.ps1
+```
+
+The helper listens on `http://127.0.0.1:3100` by default. `npm run dev` starts the same helper with Node's watch mode.
 
 Environment overrides:
 
@@ -32,15 +127,7 @@ $env:DOTABASED_PREDICT_TIMEOUT_MS='2000'
 npm start
 ```
 
-`npm run dev` starts the same helper with Node's watch mode.
-
-Windows users can also start the bridge with:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\start-dotabased-gsi.ps1
-```
-
-## Dota 2 Config
+### Dota 2 Config Details
 
 Enable Game State Integration in Dota 2's Steam launch options:
 
