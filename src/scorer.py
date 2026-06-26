@@ -17,7 +17,7 @@ def default_prediction_dir() -> Path:
     if getattr(sys, "frozen", False):
         return Path(sys.executable).resolve().parents[1] / "dotaprediction"
 
-    return Path(__file__).resolve().parents[2] / "dotaprediction"
+    return Path(__file__).resolve().parents[1] / "dotaprediction"
 
 
 def load_model(model_root: Path, model_name: str):

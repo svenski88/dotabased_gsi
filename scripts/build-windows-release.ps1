@@ -1,7 +1,7 @@
 param(
     [string]$Version,
     [string]$PredictionDir,
-    [switch]$IncludePredictionModels
+    [switch]$SkipPredictionModels
 )
 
 $ErrorActionPreference = "Stop"
@@ -35,6 +35,7 @@ New-Item -ItemType Directory -Force -Path $StageDir | Out-Null
 Copy-Item -LiteralPath $NodeExe -Destination (Join-Path $StageDir "dotabased-gsi.exe") -Force
 Copy-Item -LiteralPath $ScorerBundle -Destination (Join-Path $StageDir "scorer") -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "README.md") -Destination (Join-Path $StageDir "README.md") -Force
+Copy-Item -LiteralPath (Join-Path $RepoRoot "dotabased-gsi.env.example") -Destination (Join-Path $StageDir "dotabased-gsi.env.example") -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "config") -Destination (Join-Path $StageDir "config") -Recurse -Force
 
 $ReleaseScriptsDir = Join-Path $StageDir "scripts"
@@ -42,9 +43,9 @@ New-Item -ItemType Directory -Force -Path $ReleaseScriptsDir | Out-Null
 Copy-Item -LiteralPath (Join-Path $RepoRoot "scripts\install-gsi-config.ps1") -Destination $ReleaseScriptsDir -Force
 Copy-Item -LiteralPath (Join-Path $RepoRoot "scripts\start-dotabased-gsi-exe.bat") -Destination (Join-Path $StageDir "start-dotabased-gsi.bat") -Force
 
-if ($IncludePredictionModels) {
+if (-not $SkipPredictionModels) {
     if (-not $PredictionDir) {
-        $PredictionDir = Join-Path $RepoRoot "..\dotaprediction"
+        $PredictionDir = Join-Path $RepoRoot "dotaprediction"
     }
 
     $ResolvedPredictionDir = Resolve-Path -LiteralPath $PredictionDir -ErrorAction SilentlyContinue
@@ -52,10 +53,12 @@ if ($IncludePredictionModels) {
         Write-Error "Prediction model directory not found: $PredictionDir"
     }
 
-    Copy-Item -LiteralPath $ResolvedPredictionDir.Path -Destination (Join-Path $StageDir "dotaprediction") -Recurse -Force
+    & (Join-Path $PSScriptRoot "copy-runtime-models.ps1") `
+        -SourceDir $ResolvedPredictionDir.Path `
+        -DestinationDir (Join-Path $StageDir "dotaprediction")
 }
 else {
-    Write-Host "Prediction models were not included. Pass -IncludePredictionModels -PredictionDir <path> to bundle them."
+    Write-Host "Prediction models were not included because -SkipPredictionModels was provided."
 }
 
 Compress-Archive -LiteralPath $StageDir -DestinationPath $ZipPath -Force

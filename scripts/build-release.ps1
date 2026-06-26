@@ -28,6 +28,7 @@ New-Item -ItemType Directory -Force -Path $StageDir | Out-Null
 
 $ItemsToCopy = @(
     ".gitignore",
+    "dotabased-gsi.env.example",
     "README.md",
     "package.json",
     "config",
@@ -40,6 +41,10 @@ foreach ($Item in $ItemsToCopy) {
     $Destination = Join-Path $StageDir $Item
     Copy-Item -LiteralPath $Source -Destination $Destination -Recurse -Force
 }
+
+& (Join-Path $PSScriptRoot "copy-runtime-models.ps1") `
+    -SourceDir (Join-Path $RepoRoot "dotaprediction") `
+    -DestinationDir (Join-Path $StageDir "dotaprediction")
 
 Compress-Archive -LiteralPath $StageDir -DestinationPath $ZipPath -Force
 

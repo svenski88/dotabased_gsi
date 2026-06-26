@@ -2,24 +2,15 @@
 
 Local Node helper for Dota 2 Game State Integration. It receives GSI payloads from the Dota 2 client, exposes browser-readable draft/debug endpoints for DotaBASED, and can proxy prediction requests to local LightGBM model files.
 
-Developer Note:  This is a beta utility and not ready for general distribution yet.  Please provide testing feedback to me on discord: [.svenge](https://discord.com/users/127179901148069889)
+Developer Note:  This is a 'beta' utility still undergoing testing.  Please provide feedback to me on discord: [.svenge](https://discord.com/users/127179901148069889)
 
-## Install and Run
+## Prediction Models
+Prediction models have been included in this release, thanks to TheWonderCow: ([Youtube](https://www.youtube.com/@thewondercow) / [Pateron](https://www.patreon.com/TheWonderCow)).  
 
-### Windows Executable Release
-
-Use this package if you downloaded `dotabased-gsi-v0.1.0-windows-x64.zip`. This release does not require Node.js or Python to be installed.
-
-1. Extract `dotabased-gsi-v0.1.0-windows-x64.zip` to a folder such as:
+They are locaed are under:
 
 ```text
-C:\Tools\dotabased-gsi
-```
-
-2. Optional: place prediction models in:
-
-```text
-C:\Tools\dotabased-gsi\dotaprediction
+dotabased-gsi\dotaprediction
 ```
 
 The expected model layout is:
@@ -43,7 +34,19 @@ set DOTABASED_PREDICTION_DIR=D:\DotaModels\dotaprediction
 dotabased-gsi.exe
 ```
 
-3. Install the Dota 2 GSI config:
+## Install and Run
+
+### Windows Executable Release
+
+Use this package if you downloaded `dotabased-gsi-v0.1.0-windows-x64.zip`. This release does not require Node.js or Python to be installed.
+
+1. Extract `dotabased-gsi-v0.1.0-windows-x64.zip` to a folder such as:
+
+```text
+C:\Tools\dotabased-gsi
+```
+
+2. Install the Dota 2 GSI config:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1
@@ -55,15 +58,15 @@ If Dota 2 is installed in a custom Steam library, pass the folder ending in `dot
 powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1 -DotaPath "D:\SteamLibrary\steamapps\common\dota 2 beta\game\dota"
 ```
 
-4. Enable Game State Integration in Dota 2's Steam launch options:
+3. Enable Game State Integration in Dota 2's Steam launch options:
 
 ```text
 -gamestateintegration
 ```
 
-5. Restart Dota 2.
+4. Restart Dota 2.
 
-6. Start the bridge:
+5. Start the bridge:
 
 ```text
 start-dotabased-gsi.bat
@@ -71,7 +74,7 @@ start-dotabased-gsi.bat
 
 The helper listens on `http://127.0.0.1:3100` by default.
 
-### Node Server Release
+## Node Server Release
 
 Use this package if you downloaded `dotabased-gsi-v0.1.0.zip` or cloned the repository.
 
@@ -79,28 +82,35 @@ Requirements:
 
 - Node.js 18 or newer
 - Dota 2 installed locally
-- Optional, for `/predict`: Python with `lightgbm` and `numpy`, plus the prediction model directory
-  - Prediction models available from WonderCow's patreon here: https://www.patreon.com/TheWonderCow
+- For `/predict` in Node/source mode: Python with `lightgbm` and `numpy`
 
 1. Extract the zip or clone the repo.
 
-2. Optional: place prediction models at `..\dotaprediction` relative to this repo, or set `DOTABASED_PREDICTION_DIR`.
+2. Prediction models are included under `dotaprediction` in this repo. You can override the model path with `DOTABASED_PREDICTION_DIR`.
 
-3. Install the Dota 2 GSI config:
+3. Optional: create a local environment override file:
+
+```powershell
+Copy-Item dotabased-gsi.env.example dotabased-gsi.env
+```
+
+Edit `dotabased-gsi.env` to override ports, tokens, model paths, or scorer settings. Values already set in your shell or Windows environment take precedence over this file. To load a different file, set `DOTABASED_ENV_FILE` before starting the server.
+
+4. Install the Dota 2 GSI config:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\install-gsi-config.ps1
 ```
 
-4. Enable Game State Integration in Dota 2's Steam launch options:
+5. Enable Game State Integration in Dota 2's Steam launch options:
 
 ```text
 -gamestateintegration
 ```
 
-5. Restart Dota 2.
+6. Restart Dota 2.
 
-6. Start the bridge:
+7. Start the bridge:
 
 ```powershell
 npm start
@@ -114,7 +124,7 @@ powershell -ExecutionPolicy Bypass -File scripts\start-dotabased-gsi.ps1
 
 The helper listens on `http://127.0.0.1:3100` by default. `npm run dev` starts the same helper with Node's watch mode.
 
-Environment overrides:
+Environment overrides can be set in `dotabased-gsi.env` or directly in PowerShell:
 
 ```powershell
 $env:DOTABASED_GSI_HOST='127.0.0.1'
@@ -122,7 +132,7 @@ $env:DOTABASED_GSI_PORT='3100'
 $env:DOTABASED_GSI_TOKEN='dotabased-local-gsi'
 $env:DOTABASED_GSI_STALE_AFTER_MS='5000'
 $env:DOTABASED_PYTHON='python'
-$env:DOTABASED_PREDICTION_DIR='..\dotaprediction'
+$env:DOTABASED_PREDICTION_DIR='.\dotaprediction'
 $env:DOTABASED_PREDICT_TIMEOUT_MS='2000'
 npm start
 ```
@@ -236,7 +246,7 @@ Example response:
 }
 ```
 
-By default, source/development mode looks for model files in `..\dotaprediction` relative to this repo. Windows executable releases look for model files in `.\dotaprediction` next to `dotabased-gsi.exe`, even if that folder is not present yet. Set `DOTABASED_PREDICTION_DIR` to override either default. Each model directory must contain `model.txt` and `model_meta.json` with `feature_names`.
+By default, source/development mode looks for model files in `.\dotaprediction` inside this repo. Windows executable releases look for model files in `.\dotaprediction` next to `dotabased-gsi.exe`. Set `DOTABASED_PREDICTION_DIR` to override either default. Each model directory must contain `model.txt` and `model_meta.json` with `feature_names`.
 
 ## Browser Access
 
@@ -277,7 +287,7 @@ This creates:
 dist\dotabased-gsi-v0.1.0.zip
 ```
 
-The release zip contains the source files, config template, README, and helper scripts. It intentionally does not include prediction model files.
+The release zip contains the source files, config template, README, helper scripts, and the runtime prediction model files under `dotaprediction`.
 
 Suggested GitHub release flow:
 
@@ -327,7 +337,7 @@ python -m pip install pyinstaller lightgbm numpy
 To include local prediction models in the executable release zip, pass the model directory explicitly:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-windows-release.ps1 -IncludePredictionModels -PredictionDir "C:\path\to\dotaprediction"
+powershell -ExecutionPolicy Bypass -File scripts\build-windows-release.ps1 -PredictionDir "C:\path\to\dotaprediction"
 ```
 
-Only include prediction model files if redistribution is allowed. If models are omitted, the bridge still starts, but `/predict/status` reports a model-loading error until users provide `DOTABASED_PREDICTION_DIR` or place models in `dotaprediction` next to `dotabased-gsi.exe`.
+The executable release includes the repo-local `dotaprediction` folder by default. Pass `-SkipPredictionModels` only if you need a smaller build and plan to provide models separately with `DOTABASED_PREDICTION_DIR`.

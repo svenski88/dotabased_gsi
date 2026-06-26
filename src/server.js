@@ -1,6 +1,9 @@
 ﻿import http from 'node:http';
 import { emptyDraft, normalizeGameStateDraft, summarizeGameState } from './draft.js';
 import { PredictionService } from './predictor.js';
+import { loadEnvFile } from './envFile.js';
+
+loadEnvFile();
 
 const HOST = process.env.DOTABASED_GSI_HOST || '127.0.0.1';
 const PORT = Number(process.env.DOTABASED_GSI_PORT || 3100);

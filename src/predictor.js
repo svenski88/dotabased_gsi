@@ -18,7 +18,7 @@ const EXECUTABLE_DIR = path.dirname(process.execPath);
 const BUNDLED_SCORER_PATH = path.join(EXECUTABLE_DIR, 'scorer', 'scorer.exe');
 const BUNDLED_PREDICTION_DIR = path.join(EXECUTABLE_DIR, 'dotaprediction');
 const SOURCE_SCORER_PATH = path.join(MODULE_DIR, 'scorer.py');
-const SOURCE_PREDICTION_DIR = path.resolve(MODULE_DIR, '..', '..', 'dotaprediction');
+const SOURCE_PREDICTION_DIR = path.resolve(MODULE_DIR, '..', 'dotaprediction');
 const IS_PACKAGED_EXECUTABLE = path.basename(process.execPath).toLowerCase() === 'dotabased-gsi.exe'
   || fs.existsSync(BUNDLED_SCORER_PATH);
 const PREDICTION_DIR = process.env.DOTABASED_PREDICTION_DIR
