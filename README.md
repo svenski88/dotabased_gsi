@@ -25,6 +25,8 @@ dotaprediction\
   herowr\model_meta.json
   max482\model.txt
   max482\model_meta.json
+  pro\model.txt
+  pro\model_meta.json
 ```
 
 You can also keep models elsewhere and set `DOTABASED_PREDICTION_DIR` before launching:
@@ -82,7 +84,7 @@ Requirements:
 
 - Node.js 18 or newer
 - Dota 2 installed locally
-- For `/predict` in Node/source mode: Python with `lightgbm` and `numpy`
+- For `/predict` in Node/source mode: Python with `lightgbm>=4.0` and `numpy`
 
 1. Extract the zip or clone the repo.
 
@@ -215,6 +217,7 @@ Hero IDs are normalized to five Radiant slots and five Dire slots. Missing or in
 - `micro19`
 - `herowr`
 - `max482`
+- `pro`
 
 Example request:
 
@@ -246,7 +249,7 @@ Example response:
 }
 ```
 
-By default, source/development mode looks for model files in `.\dotaprediction` inside this repo. Windows executable releases look for model files in `.\dotaprediction` next to `dotabased-gsi.exe`. Set `DOTABASED_PREDICTION_DIR` to override either default. Each model directory must contain `model.txt` and `model_meta.json` with `feature_names`.
+By default, source/development mode looks for model files in `.\dotaprediction` inside this repo. Windows executable releases look for model files in `.\dotaprediction` next to `dotabased-gsi.exe`. Set `DOTABASED_PREDICTION_DIR` to override either default. Each model directory must contain `model.txt` and `model_meta.json` with either `feature_names` or `features`. If `model_meta.json` includes `platt`, the scorer applies that calibration to the model output.
 
 ## Browser Access
 

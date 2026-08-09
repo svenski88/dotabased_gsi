@@ -58,6 +58,7 @@ export class PredictionService {
     this.pendingRequests = new Map();
     this.stdoutBuffer = '';
     this.stderrBuffer = '';
+    this.loadedModels = [];
   }
 
   start() {
@@ -109,6 +110,7 @@ export class PredictionService {
 
       if (payload.type === 'ready') {
         this.ready = true;
+        this.loadedModels = Array.isArray(payload.models) ? payload.models : [];
         this.startupError = null;
         continue;
       }
@@ -133,6 +135,7 @@ export class PredictionService {
     const error = new Error(`Prediction scorer exited (${signal || code}). ${this.stderrBuffer}`.trim());
     this.process = null;
     this.ready = false;
+    this.loadedModels = [];
     this.startupError = error.message;
     this.rejectPending(error);
   }
@@ -180,6 +183,7 @@ export class PredictionService {
       ok: this.ready,
       ready: this.ready,
       modelRoot: PREDICTION_DIR,
+      models: this.loadedModels,
       scorerMode: this.scorerMode || scorerCommand().mode,
       scorerPath: this.scorerPath || scorerCommand().command,
       error: this.startupError,

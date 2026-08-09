@@ -10,7 +10,7 @@ import lightgbm as lgb
 import numpy as np
 
 
-SUPPORTED_MODELS = ("min3", "micro19", "herowr", "max482")
+SUPPORTED_MODELS = ("min3", "micro19", "herowr", "max482", "pro")
 
 
 def default_prediction_dir() -> Path:
@@ -24,10 +24,15 @@ def load_model(model_root: Path, model_name: str):
     model_dir = model_root / model_name
     booster = lgb.Booster(model_file=str(model_dir / "model.txt"))
     meta = json.loads((model_dir / "model_meta.json").read_text(encoding="utf-8"))
+    feature_names = meta.get("feature_names") or meta.get("features")
+    if not feature_names:
+        raise ValueError(f"Missing feature list in {model_dir / 'model_meta.json'}")
+
     return {
         "booster": booster,
-        "features": meta["feature_names"],
+        "features": feature_names,
         "best_iteration": meta.get("best_iteration"),
+        "platt": meta.get("platt"),
     }
 
 
@@ -40,8 +45,15 @@ def score_model(model, features: dict) -> float:
         except (TypeError, ValueError):
             x[0, index] = 0.0
 
-    prediction = model["booster"].predict(x, num_iteration=model["best_iteration"])
-    return float(np.atleast_1d(prediction)[0])
+    prediction = float(np.atleast_1d(model["booster"].predict(x, num_iteration=model["best_iteration"]))[0])
+    platt = model.get("platt")
+
+    if isinstance(platt, dict) and "a" in platt and "b" in platt:
+        clipped_prediction = min(max(prediction, 1e-15), 1 - 1e-15)
+        logit = np.log(clipped_prediction / (1 - clipped_prediction))
+        prediction = 1 / (1 + np.exp(-(float(platt["a"]) * logit + float(platt["b"]))))
+
+    return float(prediction)
 
 
 def main() -> int:
