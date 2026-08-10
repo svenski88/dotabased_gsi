@@ -8,7 +8,7 @@ loadEnvFile();
 const HOST = process.env.DOTABASED_GSI_HOST || '127.0.0.1';
 const PORT = Number(process.env.DOTABASED_GSI_PORT || 3100);
 const AUTH_TOKEN = process.env.DOTABASED_GSI_TOKEN || 'dotabased-local-gsi';
-const VERSION = '0.1.0';
+const VERSION = '0.1.3';
 const STALE_AFTER_MS = Number(process.env.DOTABASED_GSI_STALE_AFTER_MS || 5000);
 const allowedOrigins = new Set([
   'http://localhost:5173',
