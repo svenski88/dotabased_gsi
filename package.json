@@ -1,6 +1,6 @@
 ﻿{
   "name": "dotabased-gsi",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Local Dota 2 Game State Integration bridge for DotaBASED HeroDraft.",
   "type": "module",
   "main": "src/server.js",
